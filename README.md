@@ -1,4 +1,13 @@
 Note the R kernel, via the workflow yaml file. SG
+Also, might want to bundle all of the odate notebooks in at build time? Add this to workflow to do that:
+
+```
+- name: Download notebooks from GitHub
+  run: |
+    mkdir -p content/notebooks
+    curl -L https://raw.githubusercontent.com/username/repo/branch/path/to/notebook.ipynb -o content/notebooks/notebook.ipynb
+```
+
 
 # JupyterLite Demo
 
