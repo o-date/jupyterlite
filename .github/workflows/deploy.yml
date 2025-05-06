@@ -1,5 +1,4 @@
 name: Build and Deploy
-
 on:
   push:
     branches:
@@ -7,7 +6,6 @@ on:
   pull_request:
     branches:
       - '*'
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -21,6 +19,24 @@ jobs:
       - name: Install the dependencies
         run: |
           python -m pip install -r requirements.txt
+          # Install the webR kernel for JupyterLite
+          python -m pip install git+https://github.com/r-wasm/jupyterlite-webr-kernel.git
+      - name: Create jupyter-lite.json configuration
+        run: |
+          mkdir -p .jupyter-lite
+          cat > .jupyter-lite/jupyter-lite.json << EOF
+          {
+            "jupyter-lite-schema-version": 0,
+            "jupyter-config-data": {
+              "litePluginSettings": {
+                "@r-wasm/webr-kernel-extension:kernel": {
+                  "baseUrl": "https://webr.r-wasm.org/latest/",
+                  "repoUrl": "https://repo.r-wasm.org/"
+                }
+              }
+            }
+          }
+          EOF
       - name: Build the JupyterLite site
         run: |
           cp README.md content
@@ -29,18 +45,15 @@ jobs:
         uses: actions/upload-pages-artifact@v3
         with:
           path: ./dist
-
   deploy:
     needs: build
     if: github.ref == 'refs/heads/main'
     permissions:
       pages: write
       id-token: write
-
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-
     runs-on: ubuntu-latest
     steps:
       - name: Deploy to GitHub Pages
