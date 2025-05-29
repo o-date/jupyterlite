@@ -1,0 +1,86 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - '*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      
+      - name: Install the dependencies
+        run: |
+          python -m pip install -r requirements.txt
+      
+      - name: Get the R Kernel
+        run: |
+          python -m pip install git+https://github.com/r-wasm/jupyterlite-webr-kernel.git
+      
+      - name: Clone and build custom extension
+        run: |
+          # Clone your custom extension repository
+          git clone https://github.com/XLabCU/jupyterlite-pkm.git temp-extension
+          cd temp-extension
+          
+          # Install Node.js dependencies and build the extension
+          npm install
+          npm run build
+          
+          # Install the built extension
+          pip install -e .
+          
+          # Clean up
+          cd ..
+          rm -rf temp-extension
+      
+      - name: Clone other repositories
+        run: |
+          mkdir -p content/external-repos
+          # Clone a specific repository; this is just for testing may 2025
+          git clone https://github.com/o-date/notebooks-archdata.git content/using-archdata-R
+          # Clone another repository
+          git clone https://github.com/o-date/creativity2.git content/world-building
+      
+      - name: Build the JupyterLite site
+        run: |
+          cp README.md content
+          jupyter lite build --contents content --output-dir dist
+      
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./dist
+
+  deploy:
+    needs: build
+    if: github.ref == 'refs/heads/main'
+    permissions:
+      pages: write
+      id-token: write
+    
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
