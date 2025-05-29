@@ -1,4 +1,4 @@
-name: Build and Deploy Server
+name: Build and Deploy
 
 on:
   push:
@@ -33,22 +33,10 @@ jobs:
         run: |
           python -m pip install git+https://github.com/r-wasm/jupyterlite-webr-kernel.git
       
-      - name: Clone and build custom extension
+      - name: Install custom extension
         run: |
-          # Clone your custom extension repository
-          git clone https://github.com/XLabCU/jupyterlite-pkm.git temp-extension
-          cd temp-extension
-          
-          # Install Node.js dependencies and build the extension
-          npm install
-          npm run build
-          
-          # Install the built extension
-          pip install -e .
-          
-          # Clean up
-          cd ..
-          rm -rf temp-extension
+          # Try installing directly from the git repository
+          pip install git+https://github.com/XLabCU/jupyterlite-pkm.git
       
       - name: Clone other repositories
         run: |
