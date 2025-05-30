@@ -37,15 +37,7 @@ jobs:
         run: |
           # Try installing directly from the git repository
           pip install git+https://github.com/XLabCU/jupyterlite-pkm.git
-      
-      - name: Clone other repositories
-        run: |
-          mkdir -p content/external-repos
-          # Clone a specific repository; this is just for testing may 2025
-          git clone https://github.com/o-date/notebooks-archdata.git content/using-archdata-R
-          # Clone another repository
-          git clone https://github.com/o-date/creativity2.git content/world-building
-      
+          
       - name: Build the JupyterLite site
         run: |
           cp README.md content
